@@ -273,5 +273,3 @@ Refer to the SETUP_AND_INSTALLATION.md for:
 - Troubleshooting guide
 
 ---
-
-**Built with ❤️ for HRMS Task Management**
