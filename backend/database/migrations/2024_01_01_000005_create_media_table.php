@@ -1,0 +1,42 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        if (Schema::hasTable('media')) {
+            return;
+        }
+
+        Schema::create('media', function (Blueprint $table) {
+            $table->id();
+            $table->morphs('model');
+            $table->uuid('uuid')->nullable()->unique();
+            $table->string('collection_name');
+            $table->string('name');
+            $table->string('file_name');
+            $table->string('mime_type')->nullable();
+            $table->string('disk');
+            $table->unsignedBigInteger('size');
+            $table->json('manipulations')->nullable();
+            $table->json('custom_properties')->nullable();
+            $table->json('generated_conversions')->nullable();
+            $table->unsignedBigInteger('responsive_images')->nullable();
+            $table->unsignedInteger('order_column')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        if (!Schema::hasTable('media')) {
+            return;
+        }
+
+        Schema::dropIfExists('media');
+    }
+};
