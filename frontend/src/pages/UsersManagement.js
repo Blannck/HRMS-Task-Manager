@@ -345,7 +345,7 @@ export default function UsersManagement() {
                     justifyContent: "center",
                   }}
                 >
-                  <Shield sx={{ color: "#3B82F6", fontSize: 28 }} />
+                  <ShieldIcon sx={{ color: "#3B82F6", fontSize: 28 }} />
                 </Box>
               </Box>
             </CardContent>

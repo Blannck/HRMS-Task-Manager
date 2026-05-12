@@ -248,7 +248,7 @@ export default function EmployeeDashboard() {
                           display: 'block',
                         }}
                       >
-                        Created: {new Date(task.created_at).toLocaleDateString()}
+                        📅 Created: {new Date(task.created_at).toLocaleDateString('en-US')}
                       </Typography>
                     </CardContent>
 
