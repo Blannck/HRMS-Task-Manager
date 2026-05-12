@@ -40,37 +40,69 @@ This is a comprehensive HRMS (Human Resource Management System) with task manage
 
 ### Step 1: Start MySQL Server
 
-Open PowerShell and run:
-
+**Windows:**
 ```powershell
 cd "D:\Codes\Team Task & Workload Manager\backend"
 & 'C:\Program Files\MySQL\MySQL Server 8.4\bin\mysqld.exe' --defaults-file='.\\my-local.ini' --console
+```
+
+**Mac:**
+```zsh
+cd backend
+/usr/local/mysql/bin/mysqld --defaults-file='./my-mac.ini' --console
 ```
 
 Keep this terminal open. You should see: `ready for connections ... port: 3306`
 
 ### Step 2: Backend Setup (New Terminal)
 
-Open a new PowerShell terminal and run:
-
+**Windows:**
 ```powershell
 cd "D:\Codes\Team Task & Workload Manager\backend"
+cp .env.example .env
 composer install
+php artisan key:generate
 php artisan migrate
 php artisan db:seed --class=RoleAndPermissionSeeder
 php artisan storage:link
 php artisan route:clear
 php artisan config:clear
+php artisan serve
 ```
+
+**Mac:**
+```zsh
+cd backend
+cp .env.example .env
+composer install
+php artisan key:generate
+php artisan migrate
+php artisan db:seed --class=RoleAndPermissionSeeder
+php artisan storage:link
+php artisan route:clear
+php artisan config:clear
+php artisan serve
+```
+
+Wait for: `INFO  Server running on [http://127.0.0.1:8000]`
 
 ### Step 3: Frontend Setup (Another New Terminal)
 
-Open another PowerShell terminal and run:
-
+**Windows:**
 ```powershell
 cd "D:\Codes\Team Task & Workload Manager\frontend"
 npm install
+npm start
 ```
+
+**Mac:**
+```zsh
+cd frontend
+npm install
+npm start
+```
+
+The frontend will automatically open at `http://localhost:3000`.
 
 **Setup is complete!**
 
@@ -78,14 +110,21 @@ npm install
 
 ### Terminal 1: Start MySQL
 
+**Windows:**
 ```powershell
 cd "D:\Codes\Team Task & Workload Manager\backend"
 & 'C:\Program Files\MySQL\MySQL Server 8.4\bin\mysqld.exe' --defaults-file='.\\my-local.ini' --console
 ```
 
-Keep this open.
+**Mac:**
+```zsh
+cd backend
+/usr/local/mysql/bin/mysqld --defaults-file='./my-mac.ini' --console
+```
 
-If you want MySQL to start automatically every time, create the Windows service once in an Administrator PowerShell and then use this terminal command on future runs:
+Keep this open. If you get "Unable to lock ./ibdata1 error: 35", run `killall mysqld` and try again.
+
+For Windows: If you want MySQL to start automatically every time, create the Windows service once in an Administrator PowerShell and then use this terminal command on future runs:
 
 ```powershell
 Start-Service -Name HRMS_MySQL
@@ -93,8 +132,17 @@ Start-Service -Name HRMS_MySQL
 
 ### Terminal 2: Start Laravel Backend
 
+**Windows:**
 ```powershell
 cd "D:\Codes\Team Task & Workload Manager\backend"
+php artisan config:clear
+php artisan route:clear
+php artisan serve
+```
+
+**Mac:**
+```zsh
+cd backend
 php artisan config:clear
 php artisan route:clear
 php artisan serve
@@ -104,8 +152,15 @@ Wait for: `INFO  Server running on [http://127.0.0.1:8000]`
 
 ### Terminal 3: Start React Frontend
 
+**Windows:**
 ```powershell
 cd "D:\Codes\Team Task & Workload Manager\frontend"
+npm start
+```
+
+**Mac:**
+```zsh
+cd frontend
 npm start
 ```
 
@@ -116,6 +171,8 @@ The frontend will automatically open at `http://localhost:3000`.
 ## Quick Troubleshooting
 
 - **Backend won't start?** Make sure MySQL is running (Terminal 1).
+- **"No application encryption key has been specified"?** Run `cp .env.example .env` then `php artisan key:generate` in the backend directory.
+- **MySQL error: "Unable to lock ./ibdata1 error: 35" (Mac)?** Run `killall mysqld` to stop all MySQL processes, then try starting MySQL again.
 - **Login route returns 404?** Make sure `backend/bootstrap/app.php` loads `routes/api.php` and then run `php artisan route:clear` before restarting the backend.
 - **Login fails?** Clear your browser's localStorage (DevTools → Application → localStorage → Clear all).
 - **Port 3000/8000 already in use?** Kill the process or change the port.

@@ -112,7 +112,7 @@ export default function CreateTask() {
               Create New Task
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748B', mt: 1 }}>
-              Assign work to your team members
+              Assign work to your employees
             </Typography>
           </Box>
         </Box>
@@ -175,7 +175,7 @@ export default function CreateTask() {
                     mb: 2,
                   }}
                 >
-                  Assign to Team Members
+                  Assign to Employees
                 </Typography>
 
                 {loadingEmployees ? (

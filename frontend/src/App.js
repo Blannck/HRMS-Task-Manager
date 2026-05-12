@@ -16,9 +16,10 @@ import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import CreateTask from './pages/CreateTask';
+import UsersManagement from './pages/UsersManagement';
 
 function AppContent() {
-  const { loading } = useContext(AuthContext);
+  const { loading, user } = useContext(AuthContext);
 
   if (loading) {
     return (
@@ -54,7 +55,7 @@ function AppContent() {
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="admin">
                 <AdminDashboard />
               </ProtectedRoute>
             }
@@ -62,20 +63,37 @@ function AppContent() {
           <Route
             path="/admin/create-task"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="admin">
                 <CreateTask />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <UsersManagement />
               </ProtectedRoute>
             }
           />
           <Route
             path="/employee/dashboard"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="employee">
                 <EmployeeDashboard />
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route 
+            path="/" 
+            element={
+              user ? (
+                <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/employee/dashboard'} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            } 
+          />
         </Routes>
       </Box>
     </Box>

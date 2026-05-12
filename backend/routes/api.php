@@ -25,6 +25,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'getEmployees']);
     Route::get('/profile/{id}', [UserController::class, 'getProfile']);
     Route::patch('/profile/{id}', [UserController::class, 'updateProfile']);
+    Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
+    Route::patch('/users/{id}/toggle-status', [UserController::class, 'toggleUserStatus']);
 
     // Tasks
     Route::get('/my-tasks/{userId}', [TaskController::class, 'getUserTasks']);

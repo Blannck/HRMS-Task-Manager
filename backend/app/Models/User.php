@@ -18,6 +18,7 @@ class User extends Authenticatable implements HasMedia
         'name',
         'email',
         'password',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -45,6 +46,29 @@ class User extends Authenticatable implements HasMedia
     {
         $url = $this->getFirstMediaUrl('avatar');
         // Return full URL if media exists, otherwise return null
-        return !empty($url) ? $url : null;
+        if (!empty($url)) {
+            // If it's a relative URL, prepend the full app URL
+            if (strpos($url, 'http') !== 0) {
+                $url = config('app.url') . $url;
+            }
+            return $url;
+        }
+        return null;
+    }
+
+    /**
+     * Scope to get only active users
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Check if user is active
+     */
+    public function isActive()
+    {
+        return $this->is_active;
     }
 }

@@ -9,7 +9,17 @@ A complete Minimum Viable Product (MVP) for an HRMS with task management, multi-
 - Assign tasks to multiple employees simultaneously
 - View all tasks with assigned user information
 - Track task progress with status indicators
-- Manage user accounts
+- **Manage user accounts** - View, search, and delete employees
+- Professional employee management interface
+
+### User Management (NEW! 🎉)
+- View all registered employees in a professional table
+- Search employees by name or email in real-time
+- View detailed employee information
+- Delete employees with confirmation dialog
+- See employee roles and status
+- Beautiful, responsive user interface
+- Admin-only access with role-based protection
 
 ### Employee Dashboard
 - View only personally assigned tasks
@@ -18,11 +28,12 @@ A complete Minimum Viable Product (MVP) for an HRMS with task management, multi-
 - Profile management with avatar upload
 
 ### Authentication & Authorization
-- Registration and login system
+- Registration with **role selection** (Admin or Employee)
+- Login system with role-based dashboard redirect
 - Token-based API authentication (Laravel Sanctum)
 - Role-based access control (Admin/Employee)
 - Spatie Laravel Permission integration
-- Protected routes with automatic redirection
+- Protected routes with automatic redirection based on user role
 
 ### Profile Management
 - View and edit user information
@@ -49,10 +60,10 @@ A complete Minimum Viable Product (MVP) for an HRMS with task management, multi-
 #### API Controllers
 
 **AuthController:**
-- Handles user registration with default 'employee' role
-- Manages login with token generation
+- Handles user registration with role selection (admin/employee)
+- Manages login with token generation and role-based redirect
 - Provides logout functionality
-- Formats user responses consistently
+- Formats user responses consistently with role information
 
 **UserController:**
 - Retrieves all employees for assignment dropdowns
@@ -116,7 +127,8 @@ A complete Minimum Viable Product (MVP) for an HRMS with task management, multi-
 - **Login.js** - Authentication form with demo credentials display
 - **Register.js** - User registration with password confirmation
 - **Profile.js** - Profile editing with photo upload capability
-- **AdminDashboard.js** - Task overview for admins
+- **AdminDashboard.js** - Task overview for admins with "Manage Users" button
+- **UsersManagement.js** - Employee list management with search and delete functionality (NEW!)
 - **EmployeeDashboard.js** - Personal task board for employees
 - **CreateTask.js** - Task creation with multi-select employee assignment
 

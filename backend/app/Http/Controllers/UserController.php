@@ -8,18 +8,25 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     /**
-     * Get all employees for assignment dropdown
+     * Get all employees and admins for assignment dropdown and user management
      */
     public function getEmployees()
     {
-        $employees = User::role('employee')->get();
+        $users = User::get();
+        $appUrl = config('app.url');
 
         return response()->json([
-            'employees' => $employees->map(function ($user) {
+            'employees' => $users->map(function ($user) use ($appUrl) {
+                $photoUrl = $user->getFirstMediaUrl('avatar');
+                $fullPhotoUrl = $photoUrl ? $appUrl . $photoUrl : null;
+
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'role' => $user->getRoleNames()->first() ?? 'employee',
+                    'is_active' => $user->is_active,
+                    'profile_photo' => $fullPhotoUrl,
                 ];
             }),
         ]);
@@ -84,6 +91,58 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->getRoleNames()->first(),
+                'profile_photo' => $user->getProfilePhotoUrl(),
+            ],
+        ]);
+    }
+
+    /**
+     * Delete a user (admin only)
+     */
+    public function deleteUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        // Prevent deleting the currently authenticated admin
+        if ($request->user()->id === (int)$id) {
+            return response()->json(['message' => 'Cannot delete your own account'], 403);
+        }
+
+        // Delete user's media files
+        $user->clearMediaCollection('avatar');
+
+        // Delete the user
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User deleted successfully',
+        ]);
+    }
+
+    /**
+     * Toggle user active status (admin only)
+     */
+    public function toggleUserStatus(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        // Prevent deactivating yourself
+        if ($request->user()->id === (int)$id) {
+            return response()->json(['message' => 'Cannot deactivate your own account'], 403);
+        }
+
+        // Toggle the is_active status
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        return response()->json([
+            'message' => $user->is_active ? 'User activated successfully' : 'User deactivated successfully',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->getRoleNames()->first(),
+                'is_active' => $user->is_active,
                 'profile_photo' => $user->getProfilePhotoUrl(),
             ],
         ]);

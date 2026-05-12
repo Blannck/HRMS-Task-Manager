@@ -8,6 +8,15 @@ import {
   Typography,
   Alert,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Paper,
 } from '@mui/material';
 import { AuthContext } from '../context/AuthContext';
 
@@ -16,6 +25,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('employee');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useContext(AuthContext);
@@ -33,7 +43,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await register(name, email, password);
+      await register(name, email, password, role);
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
@@ -135,6 +145,49 @@ export default function Register() {
               required
               sx={{ mb: 3 }}
             />
+
+            {/* Role Selection */}
+            <Box sx={{ mb: 3, p: 2, backgroundColor: '#F1F5F9', borderRadius: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#0F172A' }}>
+                Select Your Role
+              </Typography>
+              <RadioGroup
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                disabled={loading}
+              >
+                <FormControlLabel
+                  value="employee"
+                  control={<Radio />}
+                  label={
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#0F172A' }}>
+                        Employee
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
+                        View assigned tasks and update status
+                      </Typography>
+                    </Box>
+                  }
+                  sx={{ mb: 2 }}
+                />
+                <FormControlLabel
+                  value="admin"
+                  control={<Radio />}
+                  label={
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#0F172A' }}>
+                        Admin
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
+                        Create tasks and manage team workload
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </RadioGroup>
+            </Box>
+
             <Button
               fullWidth
               variant="contained"
