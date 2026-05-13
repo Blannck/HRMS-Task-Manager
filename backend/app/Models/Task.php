@@ -13,6 +13,8 @@ class Task extends Model
         'title',
         'description',
         'status',
+        'task_progression_id',
+        'task_progression_step_id',
     ];
 
     protected $casts = [
@@ -30,5 +32,15 @@ class Task extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'task_user');
+    }
+
+    public function progression()
+    {
+        return $this->belongsTo(TaskProgression::class, 'task_progression_id');
+    }
+
+    public function progressionStep()
+    {
+        return $this->belongsTo(TaskProgressionStep::class, 'task_progression_step_id');
     }
 }

@@ -22,15 +22,18 @@ export default function CreateTask() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [defaultProgressionId, setDefaultProgressionId] = useState(null);
   const [employees, setEmployees] = useState([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
+  const [loadingProgressions, setLoadingProgressions] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchEmployees();
+    fetchProgressions();
   }, []);
 
   const fetchEmployees = async () => {
@@ -42,6 +45,22 @@ export default function CreateTask() {
       console.error(err);
     } finally {
       setLoadingEmployees(false);
+    }
+  };
+
+  const fetchProgressions = async () => {
+    try {
+      const response = await api.get('/task-progressions');
+      const progBody = response.data;
+      const progList = Array.isArray(progBody) ? progBody : (progBody.progressions ?? progBody.data ?? []);
+      // Set the first progression as default
+      if (progList && progList.length > 0) {
+        setDefaultProgressionId(progList[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load progressions', err);
+    } finally {
+      setLoadingProgressions(false);
     }
   };
 
@@ -73,6 +92,7 @@ export default function CreateTask() {
         title,
         description,
         user_ids: selectedUsers,
+        task_progression_id: defaultProgressionId,
       });
 
       setSuccess('Task created successfully!');
@@ -283,7 +303,7 @@ export default function CreateTask() {
                 <Button
                   variant="contained"
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !defaultProgressionId}
                   sx={{
                     background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
                     '&:hover': {
