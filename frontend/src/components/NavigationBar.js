@@ -96,11 +96,7 @@ export default function NavigationBar() {
             }}
           >
             <Avatar
-              src={
-                !photoError && user?.profile_photo
-                  ? `${user.profile_photo}?t=${Date.now()}`
-                  : ''
-              }
+              src={!photoError && user?.profile_photo ? user.profile_photo : ''}
               onError={() => setPhotoError(true)}
               sx={{
                 width: 32,

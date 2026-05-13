@@ -13,20 +13,16 @@ class UserController extends Controller
     public function getEmployees()
     {
         $users = User::get();
-        $appUrl = config('app.url');
 
         return response()->json([
-            'employees' => $users->map(function ($user) use ($appUrl) {
-                $photoUrl = $user->getFirstMediaUrl('avatar');
-                $fullPhotoUrl = $photoUrl ? $appUrl . $photoUrl : null;
-
+            'employees' => $users->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleNames()->first() ?? 'employee',
                     'is_active' => $user->is_active,
-                    'profile_photo' => $fullPhotoUrl,
+                    'profile_photo' => $user->getProfilePhotoUrl(),
                 ];
             }),
         ]);
@@ -38,7 +34,6 @@ class UserController extends Controller
     public function getEmployeesForTaskAssignment()
     {
         $users = User::all();
-        $appUrl = config('app.url');
 
         // Filter out admins
         $employees = $users->filter(function ($user) {
@@ -46,17 +41,14 @@ class UserController extends Controller
         });
 
         return response()->json([
-            'employees' => $employees->map(function ($user) use ($appUrl) {
-                $photoUrl = $user->getFirstMediaUrl('avatar');
-                $fullPhotoUrl = $photoUrl ? $appUrl . $photoUrl : null;
-
+            'employees' => $employees->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->getRoleNames()->first() ?? 'employee',
                     'is_active' => $user->is_active,
-                    'profile_photo' => $fullPhotoUrl,
+                    'profile_photo' => $user->getProfilePhotoUrl(),
                 ];
             })->values(), // Reset array keys
         ]);

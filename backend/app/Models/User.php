@@ -44,14 +44,9 @@ class User extends Authenticatable implements HasMedia
      */
     public function getProfilePhotoUrl()
     {
-        $url = $this->getFirstMediaUrl('avatar');
-        // Return full URL if media exists, otherwise return null
-        if (!empty($url)) {
-            // If it's a relative URL, prepend the full app URL
-            if (strpos($url, 'http') !== 0) {
-                $url = config('app.url') . $url;
-            }
-            return $url;
+        $media = $this->getFirstMedia('avatar');
+        if ($media) {
+            return $media->getFullUrl();
         }
         return null;
     }

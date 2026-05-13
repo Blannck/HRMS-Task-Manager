@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   FormGroup,
   CircularProgress,
+  Avatar,
 } from '@mui/material';
 import { Add as AddIcon, ArrowBack as BackIcon } from '@mui/icons-material';
 import { AuthContext } from '../context/AuthContext';
@@ -211,13 +212,27 @@ export default function CreateTask() {
                             />
                           }
                           label={
-                            <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 500, color: '#0F172A' }}>
-                                {employee.name}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#94A3B8' }}>
-                                {employee.email}
-                              </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <Avatar
+                                src={employee.profile_photo ? employee.profile_photo : ''}
+                                sx={{
+                                  width: 32,
+                                  height: 32,
+                                  backgroundColor: '#06B6D4',
+                                  fontSize: '0.875rem',
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {employee.name.charAt(0).toUpperCase()}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="body2" sx={{ fontWeight: 500, color: '#0F172A' }}>
+                                  {employee.name}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                                  {employee.email}
+                                </Typography>
+                              </Box>
                             </Box>
                           }
                           sx={{

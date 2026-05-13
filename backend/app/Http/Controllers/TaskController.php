@@ -91,22 +91,17 @@ class TaskController extends Controller
      */
     private function formatTaskResponse(Task $task)
     {
-        $appUrl = config('app.url');
-
         return [
             'id' => $task->id,
             'title' => $task->title,
             'description' => $task->description,
             'status' => $task->status,
-            'assigned_users' => $task->users->map(function ($user) use ($appUrl) {
-                $photoUrl = $user->getFirstMediaUrl('avatar');
-                $fullPhotoUrl = $photoUrl ? $appUrl . $photoUrl : null;
-
+            'assigned_users' => $task->users->map(function ($user) {
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'profile_photo' => $fullPhotoUrl,
+                    'profile_photo' => $user->getProfilePhotoUrl(),
                 ];
             }),
             'created_at' => $task->created_at,

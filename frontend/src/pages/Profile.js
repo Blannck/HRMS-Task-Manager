@@ -125,7 +125,7 @@ export default function Profile() {
       // Also refresh profile to ensure we have latest data
       setTimeout(() => {
         fetchProfile();
-      }, 500);
+      }, 1000);
     } catch (err) {
       setError(err.response?.data?.message || 'Update failed');
       console.error(err);
