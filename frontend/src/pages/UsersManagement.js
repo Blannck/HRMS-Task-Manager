@@ -3,15 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Container,
   Box,
-  Typography,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  Avatar,
-  CircularProgress,
-  Alert,
+  TextField,
   Table,
   TableBody,
   TableCell,
@@ -19,14 +11,20 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TextField,
-  InputAdornment,
+  Button,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Typography,
+  Chip,
+  Avatar,
+  CircularProgress,
+  Alert,
   Tabs,
   Tab,
+  Card,
+  CardContent,
 } from "@mui/material";
 import {
   Search as SearchIcon,
@@ -34,7 +32,7 @@ import {
   Delete as DeleteIcon,
   People as PeopleIcon,
   Mail as MailIcon,
-  Shield as ShieldIcon,
+  Security as ShieldIcon,
   ArrowBack as BackIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
@@ -53,7 +51,7 @@ export default function UsersManagement() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [statusConfirm, setStatusConfirm] = useState(null);
   const [togglingStatus, setTogglingStatus] = useState(false);
-  const [activeTab, setActiveTab] = useState(0); // 0 = Employees, 1 = Admins
+  const [activeTab, setActiveTab] = useState(0);
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -66,20 +64,23 @@ export default function UsersManagement() {
     let filtered = users.filter(
       (u) =>
         u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase()),
+        u.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Exclude the logged-in user from the list
+    if (user && user.id) {
+      filtered = filtered.filter((u) => String(u.id) !== String(user.id));
+    }
 
     // Filter by role based on active tab
     if (activeTab === 0) {
-      // Employees tab
       filtered = filtered.filter((u) => u.role === "employee");
     } else if (activeTab === 1) {
-      // Admins tab
       filtered = filtered.filter((u) => u.role === "admin");
     }
 
     setFilteredUsers(filtered);
-  }, [searchTerm, users, activeTab]);
+  }, [searchTerm, users, activeTab, user]);
 
   const fetchUsers = async () => {
     try {
@@ -88,7 +89,6 @@ export default function UsersManagement() {
       const response = await api.get("/users");
       const allUsers = response.data.employees || [];
       setUsers(allUsers);
-      setFilteredUsers(allUsers);
     } catch (err) {
       setError("Failed to fetch users");
       console.error("Error fetching users:", err);
@@ -109,7 +109,7 @@ export default function UsersManagement() {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
-    setSearchTerm(""); // Clear search when switching tabs
+    setSearchTerm("");
   };
 
   const handleStatusToggleClick = (userData) => {
@@ -127,8 +127,7 @@ export default function UsersManagement() {
       setTogglingStatus(true);
       const newStatus = !statusConfirm.is_active;
       await api.patch(`/users/${statusConfirm.id}/toggle-status`);
-      
-      // Update the users list with the new status
+
       const updatedUsers = users.map((u) =>
         u.id === statusConfirm.id ? { ...u, is_active: newStatus } : u
       );
@@ -150,11 +149,9 @@ export default function UsersManagement() {
     if (!deleteConfirm) return;
 
     try {
-      // Note: You'll need to implement a delete user endpoint in the backend
       await api.delete(`/users/${deleteConfirm.id}`);
       setUsers(users.filter((u) => u.id !== deleteConfirm.id));
       setDeleteConfirm(null);
-      // Show success message
     } catch (err) {
       console.error("Error deleting user:", err);
       alert("Failed to delete user");
@@ -171,291 +168,153 @@ export default function UsersManagement() {
 
   const getAvatarColor = (index) => {
     const colors = [
-      "#06B6D4", // cyan
-      "#8B5CF6", // purple
-      "#EC4899", // pink
-      "#F59E0B", // amber
-      "#10B981", // green
-      "#3B82F6", // blue
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#FFA07A",
+      "#98D8C8",
+      "#F7DC6F",
     ];
     return colors[index % colors.length];
   };
 
   const getEmployeeCount = () =>
-    users.filter((u) => u.role === "employee").length;
-  const getAdminCount = () => users.filter((u) => u.role === "admin").length;
+    users.filter((u) => u.role === "employee" && u.id !== user?.id).length;
+  const getAdminCount = () =>
+    users.filter((u) => u.role === "admin" && u.id !== user?.id).length;
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-          }}
-        >
-          <CircularProgress />
-        </Box>
+      <Container
+        maxWidth="lg"
+        sx={{ py: 4, display: "flex", justifyContent: "center" }}
+      >
+        <CircularProgress />
       </Container>
     );
   }
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header with Back Button */}
-      <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 2 }}>
-        <Button
-          onClick={() => navigate("/admin/dashboard")}
-          startIcon={<BackIcon />}
-          sx={{ color: "#64748B", "&:hover": { backgroundColor: "#F1F5F9" } }}
-        >
-          Back
-        </Button>
-        <Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <PeopleIcon sx={{ fontSize: 40, color: "#06B6D4" }} />
-            <div>
-              <Typography
-                variant="h4"
-                sx={{ fontWeight: 700, color: "#0F172A" }}
-              >
-                User Management
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>
-                View and manage all registered users
-              </Typography>
-            </div>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Button
+            startIcon={<BackIcon />}
+            onClick={() => navigate("/admin/dashboard")}
+            sx={{
+              color: "#06B6D4",
+              textTransform: "capitalize",
+              fontSize: "1rem",
+            }}
+          >
+            Back
+          </Button>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: "#0F172A" }}>
+              User Management
+            </Typography>
+            <Typography sx={{ color: "#64748B", fontSize: "0.9rem", mt: 0.5 }}>
+              Manage employees and admin accounts
+            </Typography>
           </Box>
         </Box>
       </Box>
 
-      {/* Error Alert */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+          gap: 2,
+          mb: 4,
+        }}
+      >
+        <Card sx={{ backgroundColor: "#E0F2FE", border: "1px solid #BAE6FD" }}>
+          <CardContent>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <PeopleIcon sx={{ fontSize: 2.5, color: "#0369A1" }} />
+              <Box>
+                <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>
+                  Total Employees
+                </Typography>
+                <Typography
+                  sx={{ fontWeight: 700, fontSize: "1.5rem", color: "#0F172A" }}
+                >
+                  {getEmployeeCount()}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+        <Card sx={{ backgroundColor: "#FEE2E2", border: "1px solid #FECACA" }}>
+          <CardContent>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <ShieldIcon sx={{ fontSize: 2.5, color: "#DC2626" }} />
+              <Box>
+                <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>
+                  Total Admins
+                </Typography>
+                <Typography
+                  sx={{ fontWeight: 700, fontSize: "1.5rem", color: "#0F172A" }}
+                >
+                  {getAdminCount()}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
-      {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                boxShadow: "0 12px 24px rgba(0, 0, 0, 0.12)",
-              },
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div>
-                  <Typography
-                    sx={{
-                      color: "#94A3B8",
-                      fontSize: "0.85rem",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
-                  >
-                    Total Users
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    sx={{ fontWeight: 700, color: "#0F172A" }}
-                  >
-                    {users.length}
-                  </Typography>
-                </div>
-                <Box
-                  sx={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 2,
-                    backgroundColor: "#E0F2FE",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <PeopleIcon sx={{ color: "#06B6D4", fontSize: 28 }} />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                boxShadow: "0 12px 24px rgba(0, 0, 0, 0.12)",
-              },
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div>
-                  <Typography
-                    sx={{
-                      color: "#94A3B8",
-                      fontSize: "0.85rem",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
-                  >
-                    Employees
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    sx={{ fontWeight: 700, color: "#0F172A" }}
-                  >
-                    {getEmployeeCount()}
-                  </Typography>
-                </div>
-                <Box
-                  sx={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 2,
-                    backgroundColor: "#DBEAFE",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <ShieldIcon sx={{ color: "#3B82F6", fontSize: 28 }} />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                boxShadow: "0 12px 24px rgba(0, 0, 0, 0.12)",
-              },
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                }}
-              >
-                <div>
-                  <Typography
-                    sx={{
-                      color: "#94A3B8",
-                      fontSize: "0.85rem",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
-                  >
-                    Admins
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    sx={{ fontWeight: 700, color: "#0F172A" }}
-                  >
-                    {getAdminCount()}
-                  </Typography>
-                </div>
-                <Box
-                  sx={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 2,
-                    backgroundColor: "#FEE2E2",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <ShieldIcon sx={{ color: "#EF4444", fontSize: 28 }} />
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Search Bar */}
-      <Box sx={{ mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          mb: 3,
+          backgroundColor: "#F8FAFC",
+          p: 2,
+          borderRadius: 2,
+        }}
+      >
+        <SearchIcon sx={{ color: "#94A3B8", my: "auto" }} />
         <TextField
+          placeholder="Search users by name or email..."
           fullWidth
-          placeholder="Search by name or email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: "#94A3B8", mr: 1 }} />
-              </InputAdornment>
-            ),
-          }}
-          sx={{
-            backgroundColor: "#fff",
-            borderRadius: 2,
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2,
-              transition: "all 0.3s ease",
-              "&:hover": {
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-              },
-            },
-          }}
+          variant="standard"
+          InputProps={{ disableUnderline: true }}
+          sx={{ "& input": { fontSize: "0.95rem" } }}
         />
       </Box>
 
-      {/* Tabs for Employees and Admins */}
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ borderBottom: 1, borderColor: "#E2E8F0", mb: 3 }}>
         <Tabs
           value={activeTab}
           onChange={handleTabChange}
           sx={{
-            borderBottom: "2px solid #E2E8F0",
+            "& .MuiTabs-indicator": {
+              backgroundColor: "#06B6D4",
+            },
             "& .MuiTab-root": {
-              textTransform: "none",
+              textTransform: "capitalize",
               fontSize: "1rem",
               fontWeight: 600,
               color: "#64748B",
               "&.Mui-selected": {
                 color: "#06B6D4",
               },
-            },
-            "& .MuiTabs-indicator": {
-              backgroundColor: "#06B6D4",
-              height: 3,
             },
           }}
         >
@@ -464,23 +323,16 @@ export default function UsersManagement() {
         </Tabs>
       </Box>
 
-      {/* Users Table */}
       <TableContainer
         component={Paper}
         sx={{
-          borderRadius: 3,
-          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-          overflow: "hidden",
+          borderRadius: 2,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
         }}
       >
         <Table>
-          <TableHead>
-            <TableRow
-              sx={{
-                backgroundColor: "#F8FAFC",
-                borderBottom: "2px solid #E2E8F0",
-              }}
-            >
+          <TableHead sx={{ backgroundColor: "#F8FAFC" }}>
+            <TableRow>
               <TableCell
                 sx={{
                   fontWeight: 700,
@@ -490,7 +342,7 @@ export default function UsersManagement() {
                   py: 2,
                 }}
               >
-                Name
+                User
               </TableCell>
               <TableCell
                 sx={{
@@ -541,64 +393,59 @@ export default function UsersManagement() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredUsers.length > 0 ? (
+            {filteredUsers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} sx={{ py: 4, textAlign: "center" }}>
+                  <Typography sx={{ color: "#94A3B8" }}>
+                    No employees found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
               filteredUsers.map((userData, index) => (
                 <TableRow
                   key={userData.id}
                   sx={{
                     borderBottom: "1px solid #E2E8F0",
-                    transition: "all 0.2s ease",
-                    "&:hover": {
-                      backgroundColor: "#F8FAFC",
-                    },
-                    "&:last-child": {
-                      borderBottom: "none",
-                    },
+                    "&:hover": { backgroundColor: "#F8FAFC" },
                   }}
                 >
-                  {/* Name Cell */}
                   <TableCell sx={{ py: 2.5 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Avatar
-                        src={
-                          userData.profile_photo ? userData.profile_photo : ""
-                        }
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          backgroundColor: getAvatarColor(index),
-                          color: "#fff",
-                          fontWeight: 700,
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {getInitials(userData.name)}
-                      </Avatar>
-                      <div>
-                        <Typography
+                      {userData.profile_photo ? (
+                        <Avatar
+                          src={userData.profile_photo}
+                          alt={userData.name}
+                          sx={{ width: 40, height: 40 }}
+                        />
+                      ) : (
+                        <Avatar
                           sx={{
-                            fontWeight: 600,
-                            color: "#0F172A",
-                            fontSize: "0.95rem",
+                            width: 40,
+                            height: 40,
+                            backgroundColor: getAvatarColor(index),
+                            fontWeight: 700,
+                            color: "white",
                           }}
                         >
-                          {userData.name}
-                        </Typography>
-                      </div>
+                          {getInitials(userData.name)}
+                        </Avatar>
+                      )}
+                      <Typography sx={{ fontWeight: 600, color: "#0F172A" }}>
+                        {userData.name}
+                      </Typography>
                     </Box>
                   </TableCell>
 
-                  {/* Email Cell */}
                   <TableCell sx={{ py: 2.5 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <MailIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
-                      <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>
+                      <MailIcon sx={{ fontSize: "1rem", color: "#94A3B8" }} />
+                      <Typography sx={{ fontSize: "0.9rem", color: "#64748B" }}>
                         {userData.email}
                       </Typography>
                     </Box>
                   </TableCell>
 
-                  {/* Role Cell */}
                   <TableCell sx={{ py: 2.5 }}>
                     <Chip
                       label={
@@ -607,7 +454,9 @@ export default function UsersManagement() {
                             userData.role.slice(1)
                           : "Employee"
                       }
-                      icon={<ShieldIcon sx={{ fontSize: "1rem !important" }} />}
+                      icon={
+                        <ShieldIcon sx={{ fontSize: "1rem !important" }} />
+                      }
                       sx={{
                         backgroundColor:
                           userData.role === "admin" ? "#FEE2E2" : "#E0F2FE",
@@ -619,7 +468,6 @@ export default function UsersManagement() {
                     />
                   </TableCell>
 
-                  {/* Status Cell */}
                   <TableCell sx={{ py: 2.5, textAlign: "center" }}>
                     {userData.is_active ? (
                       <Chip
@@ -650,10 +498,13 @@ export default function UsersManagement() {
                     )}
                   </TableCell>
 
-                  {/* Actions Cell */}
                   <TableCell sx={{ py: 2.5, textAlign: "center" }}>
                     <Box
-                      sx={{ display: "flex", gap: 1, justifyContent: "center" }}
+                      sx={{
+                        display: "flex",
+                        gap: 1,
+                        justifyContent: "center",
+                      }}
                     >
                       <Button
                         variant="outlined"
@@ -678,18 +529,28 @@ export default function UsersManagement() {
                         variant="outlined"
                         size="small"
                         startIcon={
-                          userData.is_active ? <CancelIcon /> : <CheckCircleIcon />
+                          userData.is_active ? (
+                            <CancelIcon />
+                          ) : (
+                            <CheckCircleIcon />
+                          )
                         }
                         onClick={() => handleStatusToggleClick(userData)}
                         sx={{
-                          borderColor: userData.is_active ? "#EF4444" : "#10B981",
+                          borderColor: userData.is_active
+                            ? "#EF4444"
+                            : "#10B981",
                           color: userData.is_active ? "#EF4444" : "#10B981",
                           borderRadius: 1,
                           textTransform: "capitalize",
                           fontSize: "0.8rem",
                           "&:hover": {
-                            borderColor: userData.is_active ? "#DC2626" : "#059669",
-                            backgroundColor: userData.is_active ? "#FEE2E2" : "#DCFCE7",
+                            borderColor: userData.is_active
+                              ? "#DC2626"
+                              : "#059669",
+                            backgroundColor: userData.is_active
+                              ? "#FEE2E2"
+                              : "#DCFCE7",
                           },
                         }}
                       >
@@ -699,20 +560,11 @@ export default function UsersManagement() {
                   </TableCell>
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} sx={{ py: 4, textAlign: "center" }}>
-                  <Typography sx={{ color: "#94A3B8", fontSize: "0.9rem" }}>
-                    No employees found
-                  </Typography>
-                </TableCell>
-              </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* User Details Dialog */}
       <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
@@ -720,165 +572,138 @@ export default function UsersManagement() {
         fullWidth
       >
         <DialogTitle
-          sx={{ fontWeight: 700, color: "#0F172A", fontSize: "1.3rem" }}
+          sx={{
+            fontWeight: 700,
+            color: "#0F172A",
+            fontSize: "1.3rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+          }}
         >
-          User Details
+          {selectedUser?.profile_photo ? (
+            <Avatar
+              src={selectedUser.profile_photo}
+              alt={selectedUser?.name}
+              sx={{ width: 50, height: 50 }}
+            />
+          ) : (
+            <Avatar
+              sx={{
+                width: 50,
+                height: 50,
+                backgroundColor: "#06B6D4",
+                fontWeight: 700,
+                color: "white",
+              }}
+            >
+              {getInitials(selectedUser?.name || "")}
+            </Avatar>
+          )}
+          {selectedUser?.name}
         </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          {selectedUser && (
-            <Box>
-              <Box
-                sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}
-              >
-                <Avatar
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    backgroundColor: getAvatarColor(
-                      users.indexOf(selectedUser),
-                    ),
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: "1.2rem",
-                  }}
-                >
-                  {getInitials(selectedUser.name)}
-                </Avatar>
-                <div>
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      color: "#0F172A",
-                      fontSize: "1.1rem",
-                    }}
-                  >
-                    {selectedUser.name}
-                  </Typography>
-                  <Chip
-                    label={
-                      selectedUser.role
-                        ? selectedUser.role.charAt(0).toUpperCase() +
-                          selectedUser.role.slice(1)
-                        : "Employee"
-                    }
-                    icon={<ShieldIcon sx={{ fontSize: "1rem !important" }} />}
-                    size="small"
-                    sx={{
-                      backgroundColor:
-                        selectedUser.role === "admin" ? "#FEE2E2" : "#E0F2FE",
-                      color:
-                        selectedUser.role === "admin" ? "#DC2626" : "#0369A1",
-                      fontWeight: 600,
-                      fontSize: "0.75rem",
-                      mt: 1,
-                    }}
-                  />
-                </div>
-              </Box>
-
-              <Box
+        <DialogContent sx={{ pt: 2 }}>
+          <Box
+            sx={{
+              backgroundColor: "#F8FAFC",
+              p: 2,
+              borderRadius: 2,
+              mb: 2,
+            }}
+          >
+            <Box sx={{ mb: 2 }}>
+              <Typography
                 sx={{
-                  backgroundColor: "#F8FAFC",
-                  p: 2,
-                  borderRadius: 2,
-                  mb: 2,
+                  fontSize: "0.8rem",
+                  color: "#94A3B8",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  mb: 0.5,
                 }}
               >
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    sx={{
-                      fontSize: "0.8rem",
-                      color: "#94A3B8",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
-                  >
-                    Email Address
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: "#0F172A",
-                      fontSize: "0.95rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {selectedUser.email}
-                  </Typography>
-                </Box>
+                Email Address
+              </Typography>
+              <Typography
+                sx={{
+                  color: "#0F172A",
+                  fontSize: "0.95rem",
+                  fontWeight: 500,
+                }}
+              >
+                {selectedUser?.email}
+              </Typography>
+            </Box>
 
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    sx={{
-                      fontSize: "0.8rem",
-                      color: "#94A3B8",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
-                  >
-                    Account Status
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {selectedUser.is_active ? (
-                      <>
-                        <CheckCircleIcon
-                          sx={{ fontSize: "1.2rem", color: "#10B981" }}
-                        />
-                        <Typography
-                          sx={{
-                            color: "#10B981",
-                            fontSize: "0.95rem",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Active
-                        </Typography>
-                      </>
-                    ) : (
-                      <>
-                        <CancelIcon
-                          sx={{ fontSize: "1.2rem", color: "#DC2626" }}
-                        />
-                        <Typography
-                          sx={{
-                            color: "#DC2626",
-                            fontSize: "0.95rem",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Inactive
-                        </Typography>
-                      </>
-                    )}
-                  </Box>
-                </Box>
-
-                <Box sx={{ mb: 0 }}>
-                  <Typography
-                    sx={{
-                      fontSize: "0.8rem",
-                      color: "#94A3B8",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                      mb: 0.5,
-                    }}
-                  >
-                    User ID
-                  </Typography>
-                  <Typography
-                    sx={{
-                      color: "#0F172A",
-                      fontSize: "0.95rem",
-                      fontWeight: 500,
-                    }}
-                  >
-                    {selectedUser.id}
-                  </Typography>
-                </Box>
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                sx={{
+                  fontSize: "0.8rem",
+                  color: "#94A3B8",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  mb: 0.5,
+                }}
+              >
+                Account Status
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {selectedUser?.is_active ? (
+                  <>
+                    <CheckCircleIcon
+                      sx={{ fontSize: "1.2rem", color: "#10B981" }}
+                    />
+                    <Typography
+                      sx={{
+                        color: "#10B981",
+                        fontSize: "0.95rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Active
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <CancelIcon
+                      sx={{ fontSize: "1.2rem", color: "#DC2626" }}
+                    />
+                    <Typography
+                      sx={{
+                        color: "#DC2626",
+                        fontSize: "0.95rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Inactive
+                    </Typography>
+                  </>
+                )}
               </Box>
             </Box>
-          )}
+
+            <Box sx={{ mb: 0 }}>
+              <Typography
+                sx={{
+                  fontSize: "0.8rem",
+                  color: "#94A3B8",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  mb: 0.5,
+                }}
+              >
+                User ID
+              </Typography>
+              <Typography
+                sx={{
+                  color: "#0F172A",
+                  fontSize: "0.95rem",
+                  fontWeight: 500,
+                }}
+              >
+                {selectedUser?.id}
+              </Typography>
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button
@@ -891,7 +716,6 @@ export default function UsersManagement() {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={!!deleteConfirm}
         onClose={() => setDeleteConfirm(null)}
@@ -935,7 +759,6 @@ export default function UsersManagement() {
         </DialogActions>
       </Dialog>
 
-      {/* Status Toggle Confirmation Dialog */}
       <Dialog
         open={!!statusConfirm}
         onClose={() => setStatusConfirm(null)}
@@ -982,7 +805,9 @@ export default function UsersManagement() {
               borderRadius: 1,
               backgroundColor: statusConfirm?.is_active ? "#DC2626" : "#10B981",
               "&:hover": {
-                backgroundColor: statusConfirm?.is_active ? "#B91C1C" : "#059669",
+                backgroundColor: statusConfirm?.is_active
+                  ? "#B91C1C"
+                  : "#059669",
               },
             }}
           >

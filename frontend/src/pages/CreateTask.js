@@ -34,7 +34,7 @@ export default function CreateTask() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/employees');
       setEmployees(response.data.employees || []);
     } catch (err) {
       setError('Failed to load employees');

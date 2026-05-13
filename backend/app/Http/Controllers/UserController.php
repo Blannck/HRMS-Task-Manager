@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
     /**
-     * Get all employees and admins for assignment dropdown and user management
+     * Get all employees and admins for user management
      */
     public function getEmployees()
     {
@@ -29,6 +29,36 @@ class UserController extends Controller
                     'profile_photo' => $fullPhotoUrl,
                 ];
             }),
+        ]);
+    }
+
+    /**
+     * Get only employees (exclude admins) for task assignment
+     */
+    public function getEmployeesForTaskAssignment()
+    {
+        $users = User::all();
+        $appUrl = config('app.url');
+
+        // Filter out admins
+        $employees = $users->filter(function ($user) {
+            return !$user->hasRole('admin');
+        });
+
+        return response()->json([
+            'employees' => $employees->map(function ($user) use ($appUrl) {
+                $photoUrl = $user->getFirstMediaUrl('avatar');
+                $fullPhotoUrl = $photoUrl ? $appUrl . $photoUrl : null;
+
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->getRoleNames()->first() ?? 'employee',
+                    'is_active' => $user->is_active,
+                    'profile_photo' => $fullPhotoUrl,
+                ];
+            })->values(), // Reset array keys
         ]);
     }
 

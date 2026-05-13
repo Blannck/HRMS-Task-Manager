@@ -110,6 +110,7 @@ export default function Profile() {
 
       // Update preview with the uploaded photo URL from server
       if (response.data.user.profile_photo) {
+        console.log('Uploaded photo URL:', response.data.user.profile_photo);
         setProfilePhotoPreview(response.data.user.profile_photo);
       }
 
@@ -118,10 +119,12 @@ export default function Profile() {
       setConfirmPassword('');
       setProfilePhoto(null);
 
-      // Refresh profile to ensure we have latest data
+      // Immediately refresh the AuthContext user to update navbar and other components
+      refreshUser();
+      
+      // Also refresh profile to ensure we have latest data
       setTimeout(() => {
         fetchProfile();
-        refreshUser(); // Also refresh the AuthContext user for navbar
       }, 500);
     } catch (err) {
       setError(err.response?.data?.message || 'Update failed');

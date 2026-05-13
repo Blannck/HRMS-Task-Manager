@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // User/Profile
     Route::get('/users', [UserController::class, 'getEmployees']);
+    Route::get('/employees', [UserController::class, 'getEmployeesForTaskAssignment']);
     Route::get('/profile/{id}', [UserController::class, 'getProfile']);
     Route::patch('/profile/{id}', [UserController::class, 'updateProfile']);
     Route::delete('/users/{id}', [UserController::class, 'deleteUser']);

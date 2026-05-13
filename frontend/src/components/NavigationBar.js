@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   AppBar,
@@ -18,8 +18,13 @@ export default function NavigationBar() {
   const { user, token, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [photoError, setPhotoError] = React.useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [photoError, setPhotoError] = useState(false);
+
+  // Reset photo error when user changes (for avatar updates)
+  useEffect(() => {
+    setPhotoError(false);
+  }, [user?.profile_photo]);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -91,7 +96,11 @@ export default function NavigationBar() {
             }}
           >
             <Avatar
-              src={!photoError && user?.profile_photo ? user.profile_photo : ''}
+              src={
+                !photoError && user?.profile_photo
+                  ? `${user.profile_photo}?t=${Date.now()}`
+                  : ''
+              }
               onError={() => setPhotoError(true)}
               sx={{
                 width: 32,

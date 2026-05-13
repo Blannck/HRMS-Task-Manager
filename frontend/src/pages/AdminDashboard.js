@@ -33,7 +33,14 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const response = await api.get('/tasks');
-      setTasks(response.data.tasks || []);
+      const tasksData = response.data.tasks || [];
+      // Sort tasks from newest to oldest by created_at
+      const sortedTasks = tasksData.sort((a, b) => {
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateB - dateA; // Newest first
+      });
+      setTasks(sortedTasks);
     } catch (err) {
       setError('Failed to fetch tasks');
       console.error(err);
